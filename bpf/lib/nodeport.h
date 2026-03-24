@@ -1556,6 +1556,12 @@ static __always_inline int nodeport_lb6(struct __ctx_buff *ctx,
 	}
 
 	lb6_fill_key(&key, &tuple);
+#if defined(IS_BPF_OVERLAY) || defined(IS_BPF_WIREGUARD)
+	/* Traffic from overlay/wireguard has already been load-balanced
+	 * at the source node. Skip service lookup.
+	 */
+	goto skip_service_lookup;
+#endif
 
 	svc = lb6_lookup_service(&key, false);
 	if (svc)
@@ -2974,6 +2980,13 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
 	}
 
 	lb4_fill_key(&key, &tuple);
+
+#if defined(IS_BPF_OVERLAY) || defined(IS_BPF_WIREGUARD)
+	/* Traffic from overlay/wireguard has already been load-balanced
+	 * at the source node. Skip service lookup.
+	 */
+	goto skip_service_lookup;
+#endif
 
 	svc = lb4_lookup_service(&key, false);
 	if (svc)
